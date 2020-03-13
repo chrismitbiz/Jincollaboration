@@ -1,0 +1,353 @@
+---
+title: "Jin Project 2"
+subtitle: "Elevated CO2 and phytate"
+output: html_document
+---
+
+```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
+#mywd
+setwd("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/R_data")
+#mypackages
+library(ggrepel)
+library(qiime2R)
+library(tidyverse)
+library(stringr)
+library(ggplot2)
+theme_set(theme_bw())  
+library(vegan)
+library(ggpubr)
+library(RColorBrewer)
+library(phyloseq)
+library(psych)
+library(reshape2)
+library(ggfortify)
+library(factoextra)
+library(FactoMineR)
+library(maigesPack)
+library(knitr)
+library(microbiome)
+library(SpiecEasi)
+library(bookdown)
+library(tinytex)
+library(jakR)
+```
+
+
+# Metadata and phyloseq object bacteria
+```{r phyloseq, warning=FALSE, message=FALSE, echo=FALSE}
+#https://forum.qiime2.org/t/tutorial-integrating-qiime2-and-r-for-data-visualization-and-analysis-using-qiime2r/4121?u=jbisanz
+metadata<-read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/metadata.tsv") #requires tidyverse
+metadata2 <- metadata[c(2:49),]
+#defining factors
+metadata2$Soils <- factor(metadata2$Soils, levels=c("Vertisol", "Chromosol"))
+metadata2$CO2 <- factor(metadata2$CO2, levels=c("300", "500"))
+metadata2$days <-  factor(metadata2$days, levels=c("3d", "14d", "42d"))
+metadata2$Rep <-  factor(metadata2$Rep, levels=c("I", "II", "III", "IV"))
+
+SVs      <-   qiime2R::read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/qiime2_data/feature_table_insertiontreefiltered.qza")
+taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/qiime2_data/taxonomy_silva.tsv") %>% filter(Taxon != "categorical")  %>% rename(Feature.ID = `Feature ID`)
+taxtable <- taxonomy %>% as_tibble() %>% separate(Taxon, sep=";", c("Kingdom","Phylum","Class","Order","Family","Genus","Species")) 
+
+tree <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/qiime2_data/insertion-tree.qza")
+
+physeqB <- phyloseq(
+  otu_table(SVs$data, taxa_are_rows = T), 
+  phy_tree(tree$data), 
+  tax_table(as.data.frame(taxtable) %>% dplyr::select(-Confidence) %>% column_to_rownames("Feature.ID") %>% as.matrix()), 
+  sample_data(metadata2 %>% as.data.frame() %>% column_to_rownames("#SampleID")))
+
+#adding diversity measures (with ps object) to metadata and re-create ps object 
+#here a decision has to be made on sample size. Look at feature-table.qzv to see how many samples are lost with x sample size or how many features are lost with minimum sample size. This is used ONLY for diversity metrics (not differentially abundance anaylyis which I filter separately. So I generally use the minimum samples size if different between min/max is within 10fold. 
+print(paste("The minimum number of sequences in this data set is",min(colSums(otu_table(physeqB))),"and the maximum number of sequences in this data set is",max(colSums(otu_table(physeqB))) ))
+#Create rarefied physeq object
+rare_Bac <- rarefy_even_depth(physeqB, sample.size = min(colSums(otu_table(physeqB))),  rngseed = TRUE, replace = TRUE, trimOTUs = TRUE)
+ps.div <- estimate_richness(rare_Bac) #do diversity measurements and add to metadata
+ps.div$`#SampleID` <- sample_names(physeqB)
+
+meta.df <- data.frame(sample_data(physeqB))
+meta.df <- meta.df %>% rownames_to_column("#SampleID") %>% 
+  left_join(ps.div, by = "#SampleID") %>% column_to_rownames("#SampleID")
+meta.df$pielou_ev <- ps.div$Shannon/log(ps.div$Observed)      #Pielou eveness
+physeqB@sam_data <- sample_data(meta.df)
+
+physeqB
+head(sample_data(physeqB))
+#head(otu_table(physeqB))
+#head(tax_table(physeqB))
+
+```
+
+# Data inspection and filtering {#inspec}
+```{r inspec, warning=FALSE, message=FALSE, echo=FALSE}
+# all features
+otus.table <- as.data.frame(otu_table(physeqB))
+otus.table <- otus.table %>% rownames_to_column(var = "#SampleID") %>% arrange(desc(rowSums(otus.table))) %>% column_to_rownames(var = "#SampleID")
+#filter 
+#minimum of reads per feature
+physeqB.flt = prune_taxa(taxa_sums(physeqB) >= 25, physeqB) #minimum reads per feature
+physeqB.flt = filter_taxa(physeqB.flt , function(x) sum(x > 0) > (0.04*length(x)), TRUE) #minimum presense in x% of samples
+#filter any phyla that have not been classified i.e. are "NA"
+physeqB.flt = subset_taxa(physeqB.flt, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized"))
+
+#rarefaction curve
+rarecurve(t(otu_table(physeqB.flt)), step=200, sample = 7000, label = FALSE) 
+
+#taxatables for reference
+taxtableB.fltr <- data.frame(phyloseq::tax_table(physeqB.flt)@.Data)
+taxtableB.fltr <- taxtableB.fltr %>% rownames_to_column(var = "Id")
+# Make a data frame with a column for the read counts of each sample
+sample_sum_df <- data.frame(sum = sample_sums(physeqB.flt))
+summary(sample_sum_df$sum)
+
+#histograms
+# Histogram of sample read counts
+ggplot(sample_sum_df, aes(x = sum)) + 
+  geom_histogram(color = "black", fill = "indianred") +
+  ggtitle("Distribution of sample sequencing depth") + 
+  xlab("Read counts") +
+  theme(axis.title.y = element_blank())
+
+# barplot with red line through median value
+dat2 <- t(otu_table(physeqB.flt)) %>% melt(.) %>% arrange(desc(value)) %>% 
+ggbarplot(x = "Var2", y = "value",xlab = "Filtered")+ 
+    geom_hline(yintercept=median(rowSums(otu_table(physeqB.flt))), color="red")
+dat2
+
+summary(taxa_sums(physeqB.flt))
+print(paste("The number of reads and ASVs left after filtering is",round(sum(taxa_sums(physeqB.flt)) / sum(taxa_sums(physeqB))*100,2),"% and",round(ntaxa(physeqB.flt) / ntaxa(physeqB) *100,2),"%, a change from",round(sum(taxa_sums(physeqB))),"to",round(sum(taxa_sums(physeqB.flt))), "reads and", ntaxa(physeqB),"to",ntaxa(physeqB.flt),"ASVs. The median changed from", median(rowSums(otu_table(physeqB))),"to",median(rowSums(otu_table(physeqB.flt))),"reads per ASV."))
+
+otutable <- otu_table(physeqB.flt) %>% as.data.frame() %>% rownames_to_column("Feature.ID") %>% left_join(taxonomy) %>% dplyr::select( - Confidence, -Feature.ID) %>% dplyr::select(Taxon, everything())
+write.csv(t(otutable), "otu.table_Jin2.csv", row.names = TRUE)
+```
+go [back to top](#observations) 
+
+# Taxa barplots
+## by soil
+```{r barsoil, warning=FALSE, message=FALSE, echo=FALSE}
+#create plotting tables
+#use relative abundances and glomerate to x level
+physeqB.flt.rel.glom <- tax_glom(physeqB.flt, "Phylum")
+physeqB.flt.rel.glom <-  merge_samples(physeqB.flt.rel.glom, "Soils")
+physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
+#plus relative abundances of filtered data
+#use this for plots
+barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
+#barplot
+barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width = 0.2, title = "Relative Abundances of filtered OTUs", legend = "right")
+
+
+```
+go [back to top](#inspec) 
+
+## by CO2
+```{r barCO2, warning=FALSE, message=FALSE, echo=FALSE}
+physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
+physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
+
+#Soil1
+#use relative abundances and glomerate to x level
+physeqB.flt.rel.glom <- tax_glom(physeqBSoil1, "Phylum")
+physeqB.flt.rel.glom <-  merge_samples(physeqB.flt.rel.glom, "CO2")
+physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
+#barplots
+barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
+barplot.rel$Sample <- factor(barplot.rel$Sample, levels=c("300", "500"))
+barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width = 0.2, title = "Vertisol relative Abundances", legend = "right") +  theme(plot.title = element_text(size = 10))
+
+#Soil2
+physeqB.flt.rel.glom <- tax_glom(physeqBSoil2, "Phylum")
+physeqB.flt.rel.glom <-  merge_samples(physeqB.flt.rel.glom, "CO2")
+physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
+#barplots
+barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
+barplot.rel$Sample <- factor(barplot.rel$Sample, levels=c("300", "500"))
+barplot.relsoil2 <- barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width = 0.2, title = "Chromosol relative Abundances", legend = "right")+  theme(plot.title = element_text(size = 10))
+
+
+pdf(NULL)
+gg1 <- ggarrange(barplot.relsoil2, barplot.relsoil1,  common.legend = TRUE, legend = "right")
+x = dev.off()
+gg1
+
+#CLASS LEVEL
+#Soil1
+#use relative abundances and glomerate to x level
+physeqB.flt.rel.glom <- tax_glom(physeqBSoil1, "Class")
+physeqB.flt.rel.glom <-  merge_samples(physeqB.flt.rel.glom, "CO2")
+physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
+#plus relative abundances of filtered data
+#barplots
+barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
+barplot.rel$Sample <- factor(barplot.rel$Sample, levels=c("300", "500"))
+barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Class", width = 0.2, title = "Vertisol relative Abundances", legend = "right") +  theme(plot.title = element_text(size = 10))
+
+#Soil2
+physeqB.flt.rel.glom <- tax_glom(physeqBSoil2, "Class")
+physeqB.flt.rel.glom <-  merge_samples(physeqB.flt.rel.glom, "CO2")
+physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
+#plus relative abundances of filtered data
+#barplots
+barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
+barplot.rel$Sample <- factor(barplot.rel$Sample, levels=c("300", "500"))
+barplot.relsoil2 <- barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Class", width = 0.2, title = "Chromosol relative Abundances", legend = "right")+  theme(plot.title = element_text(size = 10))
+pdf(NULL)
+gg1 <- ggarrange(barplot.relsoil2, barplot.relsoil1,  common.legend = TRUE, legend = "right")
+x = dev.off()
+gg1
+```
+go [back to top](#inspec) 
+
+## by days
+```{r bardays, warning=FALSE, message=FALSE, echo=FALSE}
+#Soil1
+#use relative abundances and glomerate to x level
+physeqB.flt.rel.glom <- tax_glom(physeqB.flt, "Phylum")
+#physeqB.flt.rel.glom <-  merge_samples(physeqB.flt.rel.glom, "days")
+physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
+#plus relative abundances of filtered data
+#barplots
+barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
+#barplot.rel$Sample <- factor(barplot.rel$Sample, levels=c("3d", "14d", "42d"))
+
+barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "days", y = "Abundance", fill = "Phylum", width = 0.2, title = "Relative Abundances of filtered ASVs", legend = "right", facet.by = c("Soils","CO2")) +  theme(plot.title = element_text(size = 10))
+barplot.relsoil1
+```
+
+## Signi. diff. by CO2 on genus level (Wilcoxon test *p* < 0.05 holm corrected)
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
+physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
+
+#Soil1
+barplot.rel   <- phyloseq::transform_sample_counts(physeqBSoil1, function(x) x / sum(x) )
+barplot.rel <- psmelt(barplot.rel) %>%  arrange(desc(Phylum))
+wilcoxotest <-  barplot.rel %>% compare_means(Abundance ~ CO2, data = ., method = "wilcox.test", paired = FALSE,
+  group.by = "Genus", ref.group = NULL, symnum.args = list(), p.adjust.method = "holm") %>% as.data.frame() %>% filter(p.adj <= 0.05)
+wilcoxotest
+#barplot
+subs <- subset_taxa(physeqBSoil1, Genus %in% c("D_5__Bacillus", "D_5__Streptomyces"))
+subs <- psmelt(subs)
+barplot.relsoil1 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7))
+barplot.relsoil1 
+
+#Soil2
+barplot.rel   <- phyloseq::transform_sample_counts(physeqBSoil2, function(x) x / sum(x) )
+barplot.rel <- psmelt(barplot.rel) %>%  arrange(desc(Phylum))
+wilcoxotest <-  barplot.rel %>% compare_means(Abundance ~ CO2, data = ., method = "wilcox.test", paired = FALSE,
+  group.by = "Genus", ref.group = NULL, symnum.args = list(), p.adjust.method = "holm") %>% as.data.frame() %>% filter(p.adj <= 0.05)
+wilcoxotest
+#barplot
+
+
+```
+
+In the Chromosol, there were no significantly different abundances on genus level  
+  
+go [back to top](#inspec)  
+  
+
+
+
+# Alpha diversity {#alphadiversity}
+## by soil
+```{r alphasoil, warning=FALSE, message=FALSE, echo=FALSE}
+as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed", "InvSimpson", "Shannon", "pielou_ev"))  %>%
+ggboxplot(., x = "Soils", y = "value", add = "jitter", facet.by = "variable", scales = "free", ylab = "alpha diversity") +
+  stat_compare_means( method = "wilcox") 
+```
+go [back to top](#inspec) 
+
+
+## by CO2
+```{r alphaCO2, echo=FALSE, fig.height=10,fig.asp= 0.9, message=FALSE, warning=FALSE}
+p1 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed"))  %>%
+ggboxplot(., x = "CO2", y = "value", add = "jitter", facet.by = c("Soils","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "wilcox") 
+p2 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("InvSimpson"))  %>%
+ggboxplot(., x = "CO2", y = "value", add = "jitter", facet.by = c("Soils","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "wilcox") 
+p3 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Shannon"))  %>%
+ggboxplot(., x = "CO2", y = "value", add = "jitter", facet.by = c("Soils","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "wilcox") 
+p4 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("pielou_ev"))  %>%
+ggboxplot(., x = "CO2", y = "value", add = "jitter", facet.by = c("Soils","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "wilcox") 
+
+pdf(NULL)
+gg1 <- ggarrange(p1,p2,p3,p4)
+x = dev.off()
+gg1
+
+```
+go [back to top](#inspec) 
+
+## by days and CO2
+```{r alphadaysV, warning=FALSE, message=FALSE, echo=FALSE, fig.height=10,fig.asp= 0.9}
+
+p1 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed"))  %>% filter(Soils == "Vertisol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+p2 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("InvSimpson"))   %>% filter(Soils == "Vertisol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+p3 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Shannon"))   %>% filter(Soils == "Vertisol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+p4 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("pielou_ev"))   %>% filter(Soils == "Vertisol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+pdf(NULL)
+gg1 <- ggarrange(p1,p2,p3,p4)
+gg1 <- annotate_figure(gg1, fig.lab  = "Vertisol",fig.lab.pos	= "top.left",fig.lab.size = 14, "bold")
+x = dev.off()
+gg1
+```
+
+go [back to top](#inspec) 
+
+```{r alphadaysC, echo=FALSE, message=FALSE, warning=FALSE,fig.height=10,fig.asp= 0.9}
+
+p1 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed"))  %>% filter(Soils == "Chromosol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+p2 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("InvSimpson"))   %>% filter(Soils == "Chromosol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+p3 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Shannon"))   %>% filter(Soils == "Chromosol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+p4 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("pielou_ev"))   %>% filter(Soils == "Chromosol") %>% 
+ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
+pdf(NULL)
+gg1 <- ggarrange(p1,p2,p3,p4)
+gg1 <- annotate_figure(gg1, fig.lab  = "Chromosol",fig.lab.pos	= "top.left",fig.lab.size = 14,"bold")
+x = dev.off()
+gg1
+```
+
+go [back to top](#inspec) 
+
+# Beta diversity 
+## Permanova  {#perm}
+```{r permanova, warning=FALSE, message=FALSE, echo=FALSE}
+ps.perm <- rarefy_even_depth(physeqB.flt, sample.size = min(colSums(otu_table(physeqB.flt))),  rngseed = TRUE, replace = TRUE, trimOTUs = TRUE)
+ps.perm <- phyloseq::transform_sample_counts(ps.perm, function(x) x / sum(x) )
+otutable <- as.data.frame(phyloseq::otu_table(ps.perm))
+otutable <- as.data.frame(t(otutable))
+meta.df <- data.frame(sample_data(ps.perm))
+
+require(vegan)
+perm.soil <- adonis(otutable ~ Soils*CO2, data = meta.df ,method = "bray") 
+
+perma.df <- data.frame(perm.soil$aov.tab[1:3,5:6])
+
+kable(perma.df)
+#perma.df  <- ggtexttable(format(perma.df, digits = 1))
+#perma.df <- annotate_figure(perma.df , top =  "PERMANOVAs (filtered and rarefied ASVs, bray curtis)")
+#perma.df
+```
+go [back to top](#inspec) 
+
+## NMDS Bray
+```{r nmds, message=FALSE, warning=FALSE, echo=FALSE, results=FALSE, cache = TRUE}
+ps.perm <- rarefy_even_depth(physeqB.flt, sample.size = min(colSums(otu_table(physeqB.flt))),  rngseed = TRUE, replace = TRUE, trimOTUs = TRUE)
+ps.perm <- phyloseq::transform_sample_counts(ps.perm, function(x) x / sum(x) )
+ord_nmds <- phyloseq::ordinate(ps.perm, "NMDS", "bray")
+
+nmds1 <- phyloseq::plot_ordination(ps.perm, ord_nmds , color = "Soils", shape = "CO2") + geom_point(aes(size = InvSimpson)) + ggtitle("nMDS, bray") + labs(subtitle ="filtered and rarefied OTU table")
+nmds1  <- nmds1  +  geom_text_repel(label = nmds1$data$days)
+nmds1 <- nmds1 + stat_ellipse(aes(group = days), type = "t", linetype = 2)
+#nmds1 <- nmds1 + geom_polygon(aes(alpha = 0.6, fill = Rhizosphere,group = TreatmentID), stat = "identity") + guides(alpha = F)
+nmds1 
+
+```
+go [back to top](#inspec) 
