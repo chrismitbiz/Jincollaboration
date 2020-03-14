@@ -269,7 +269,7 @@ barplot.relsoil1
   
   
 ## Chromosol - Sign. diff. on genus level (Wilcoxon test *p* < 0.05 holm corrected)
-```{r echo=FALSE, fig.width=10, message=FALSE, warning=FALSE}
+```{r echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
 
 #Soil2 data
 physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
@@ -306,7 +306,7 @@ go [back to top](#inspec)
 
 # Alpha diversity {#alphadiversity}
 ## by soil
-```{r alphasoil, warning=FALSE, message=FALSE, echo=FALSE}
+```{r alphasoil, warning=FALSE, message=FALSE, echo=FALSE, cache=TRUE}
 as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed", "InvSimpson", "Shannon", "pielou_ev"))  %>%
 ggboxplot(., x = "Soils", y = "value", add = "jitter", facet.by = "variable", scales = "free", ylab = "alpha diversity") +
   stat_compare_means( method = "wilcox") 
