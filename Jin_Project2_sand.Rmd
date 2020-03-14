@@ -136,7 +136,7 @@ write.csv(t(otutable), "otu.table_Jin2.csv", row.names = TRUE)
 go [back to top](#observations) 
 
 # Taxa barplots
-## by soil
+## Comparison by soil
 ```{r barsoil, warning=FALSE, message=FALSE, echo=FALSE}
 #create plotting tables
 #use relative abundances and glomerate to x level
@@ -151,7 +151,7 @@ barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width 
 ```
 go [back to top](#inspec) 
 
-## by CO2
+## Comparison by CO2
 ```{r barCO2, warning=FALSE, message=FALSE, echo=FALSE,cache=TRUE}
 physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
 physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
@@ -213,12 +213,11 @@ gg1
 <br/>
 go [back to top](#inspec) 
 
-## by days
-```{r bardays, echo=FALSE, fig.width=7, message=FALSE, warning=FALSE}
-#Soil1
+## Comparison by days and CO2 concentration
+```{r bardays, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
+#Phylum level
 #use relative abundances and glomerate to x level
 physeqB.flt.rel.glom <- tax_glom(physeqB.flt, "Phylum")
-#physeqB.flt.rel.glom <-  merge_samples(physeqB.flt.rel.glom, "days")
 physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
 #plus relative abundances of filtered data
 #barplots
@@ -227,6 +226,16 @@ barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
 
 barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "CO2", y = "Abundance", fill = "Phylum", width = 0.2, title = "Relative Abundances of filtered ASVs", legend = "right", facet.by = c("Soils","days")) +  theme(plot.title = element_text(size = 10))
 barplot.relsoil1
+
+#Class level
+#use relative abundances and glomerate to x level
+physeqB.flt.rel.glom <- tax_glom(physeqB.flt, "Class")
+physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, function(x) x / sum(x) )
+#barplots
+barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
+barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "CO2", y = "Abundance", fill = "Class", width = 0.2, title = "Relative Abundances of filtered ASVs", legend = "right", facet.by = c("Soils","days")) +  theme(plot.title = element_text(size = 10))
+barplot.relsoil1
+
 ```
 
 
