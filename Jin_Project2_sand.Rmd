@@ -244,12 +244,10 @@ barplot.relsoil1
 
 
 ## Vertisol - Sign. diff. on genus level (Wilcoxon test *p* < 0.05 holm corrected)
-```{r echo=FALSE, fig.width=10, message=FALSE, warning=FALSE}
+```{r vertsigdiff, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE}
 #Soil1 data
 physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
-physeqBSoil1 = subset_taxa(physeqBSoil1, !is.na(Genus) & !Genus %in% c("", "uncharacterized"))
-
-
+#physeqBSoil1 = subset_taxa(physeqBSoil1, !is.na(Genus) & !Genus %in% c("", "uncharacterized"))
 
 #Soil1
 #wilcoxon test
@@ -267,17 +265,15 @@ subs <- subset_taxa(barplot.rel, Genus %in% c("D_5__Bacillus", "D_5__Paenibacill
 subs <- psmelt(subs)
 barplot.relsoil1 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils","days"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7), scales = "free") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 barplot.relsoil1 
-
-
 ```
   
   
 ## Chromosol - Sign. diff. on genus level (Wilcoxon test *p* < 0.05 holm corrected)
-```{r echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
+```{r chromosigdiff, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
 
 #Soil2 data
 physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
-physeqBSoil2 = subset_taxa(physeqBSoil2, !is.na(Genus) & !Genus %in% c("", "uncharacterized"))
+#physeqBSoil2 = subset_taxa(physeqBSoil2, !is.na(Genus) & !Genus %in% c("", "uncharacterized"))
 
 #Soil2
 #Wilcoxon test
@@ -296,8 +292,6 @@ subs <- subset_taxa(barplot.rel, Genus %in% c("D_5__Bacillus", "D_5__Burkholderi
 subs <- psmelt(subs)
 barplot.relsoil2 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils","days"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7), scales = "free") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 barplot.relsoil2 
-
-
 
 ```
 
