@@ -3,12 +3,10 @@ title: "Jin Project 2"
 subtitle: "Elevated CO2 and phytate"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
@@ -205,7 +203,7 @@ gg1
 go [back to top](#inspec) 
 
 ## by days
-```{r bardays, warning=FALSE, message=FALSE, echo=FALSE}
+```{r bardays, echo=FALSE, fig.width=7, message=FALSE, warning=FALSE}
 #Soil1
 #use relative abundances and glomerate to x level
 physeqB.flt.rel.glom <- tax_glom(physeqB.flt, "Phylum")
