@@ -1,12 +1,14 @@
 ---
 title: "Jin Project 2"
-knit: (function(input_file, encoding) {
-  out_dir <- 'docs';
-  rmarkdown::render(input_file,
 subtitle: "Elevated CO2 and phytate"
 output: html_document
 editor_options: 
   chunk_output_type: inline
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
@@ -36,11 +38,13 @@ library(SpiecEasi)
 library(bookdown)
 library(tinytex)
 library(jakR)
+library(kableExtra)
+options(kableExtra.auto_format = FALSE)
 ```
 
 
 # Metadata and phyloseq object bacteria
-```{r phyloseq, warning=FALSE, message=FALSE, echo=FALSE}
+```{r phyloseq, warning=FALSE, message=FALSE, echo=FALSE, cache = TRUE}
 #https://forum.qiime2.org/t/tutorial-integrating-qiime2-and-r-for-data-visualization-and-analysis-using-qiime2r/4121?u=jbisanz
 metadata<-read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/metadata.tsv") #requires tidyverse
 metadata2 <- metadata[c(2:49),]
@@ -77,14 +81,15 @@ meta.df$pielou_ev <- ps.div$Shannon/log(ps.div$Observed)      #Pielou eveness
 physeqB@sam_data <- sample_data(meta.df)
 
 physeqB
-head(sample_data(physeqB))
+#kable(head(sample_data(physeqB)))
 #head(otu_table(physeqB))
 #head(tax_table(physeqB))
-
+kable(meta.df[c(1:5),c(1:12)], booktabs=TRUE) %>% 
+  kable_styling(latex_options="scale_down")
 ```
 
 # Data inspection and filtering {#inspec}
-```{r inspec, warning=FALSE, message=FALSE, echo=FALSE}
+```{r inspec, warning=FALSE, message=FALSE, echo=FALSE, cache = TRUE}
 # all features
 otus.table <- as.data.frame(otu_table(physeqB))
 otus.table <- otus.table %>% rownames_to_column(var = "#SampleID") %>% arrange(desc(rowSums(otus.table))) %>% column_to_rownames(var = "#SampleID")
@@ -225,7 +230,8 @@ barplot.rel   <- phyloseq::transform_sample_counts(physeqBSoil1, function(x) x /
 barplot.rel <- psmelt(barplot.rel) %>%  arrange(desc(Phylum))
 wilcoxotest <-  barplot.rel %>% compare_means(Abundance ~ CO2, data = ., method = "wilcox.test", paired = FALSE,
   group.by = "Genus", ref.group = NULL, symnum.args = list(), p.adjust.method = "holm") %>% as.data.frame() %>% filter(p.adj <= 0.05)
-wilcoxotest
+kable(wilcoxotest,booktabs=TRUE) %>% 
+  kable_styling(latex_options="scale_down")
 #barplot
 subs <- subset_taxa(physeqBSoil1, Genus %in% c("D_5__Bacillus", "D_5__Streptomyces"))
 subs <- psmelt(subs)
@@ -237,7 +243,8 @@ barplot.rel   <- phyloseq::transform_sample_counts(physeqBSoil2, function(x) x /
 barplot.rel <- psmelt(barplot.rel) %>%  arrange(desc(Phylum))
 wilcoxotest <-  barplot.rel %>% compare_means(Abundance ~ CO2, data = ., method = "wilcox.test", paired = FALSE,
   group.by = "Genus", ref.group = NULL, symnum.args = list(), p.adjust.method = "holm") %>% as.data.frame() %>% filter(p.adj <= 0.05)
-wilcoxotest
+kable(wilcoxotest, booktabs=TRUE) %>% 
+  kable_styling(latex_options="scale_down")
 #barplot
 
 
@@ -257,6 +264,7 @@ as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed", 
 ggboxplot(., x = "Soils", y = "value", add = "jitter", facet.by = "variable", scales = "free", ylab = "alpha diversity") +
   stat_compare_means( method = "wilcox") 
 ```
+  
 go [back to top](#inspec) 
 
 
@@ -277,6 +285,7 @@ x = dev.off()
 gg1
 
 ```
+  
 go [back to top](#inspec) 
 
 ## by days and CO2
@@ -296,7 +305,7 @@ gg1 <- annotate_figure(gg1, fig.lab  = "Vertisol",fig.lab.pos	= "top.left",fig.l
 x = dev.off()
 gg1
 ```
-
+  
 go [back to top](#inspec) 
 
 ```{r alphadaysC, echo=FALSE, message=FALSE, warning=FALSE,fig.height=10,fig.asp= 0.9}
@@ -315,7 +324,7 @@ gg1 <- annotate_figure(gg1, fig.lab  = "Chromosol",fig.lab.pos	= "top.left",fig.
 x = dev.off()
 gg1
 ```
-
+  
 go [back to top](#inspec) 
 
 # Beta diversity 
@@ -337,6 +346,8 @@ kable(perma.df)
 #perma.df <- annotate_figure(perma.df , top =  "PERMANOVAs (filtered and rarefied ASVs, bray curtis)")
 #perma.df
 ```
+
+  
 go [back to top](#inspec) 
 
 ## NMDS Bray
@@ -352,4 +363,5 @@ nmds1 <- nmds1 + stat_ellipse(aes(group = days), type = "t", linetype = 2)
 nmds1 
 
 ```
+  
 go [back to top](#inspec) 
