@@ -3,7 +3,7 @@ title: "Jin Project 2"
 subtitle: "Elevated CO2 and phytate"
 output: html_document
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
@@ -246,7 +246,6 @@ wilcoxotest <-  barplot.rel %>% compare_means(Abundance ~ CO2, data = ., method 
 kable(wilcoxotest, booktabs=TRUE) %>% 
   kable_styling(latex_options="scale_down")
 #barplot
-?stat_compare_means
 
 ```
 
