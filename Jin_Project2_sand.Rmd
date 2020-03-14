@@ -218,6 +218,7 @@ barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "days", y = "Abundance", fill 
 barplot.relsoil1
 ```
 
+
 ## Signi. diff. by CO2 on genus level (Wilcoxon test *p* < 0.05 holm corrected)
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
 physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
