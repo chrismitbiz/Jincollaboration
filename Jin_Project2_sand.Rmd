@@ -216,7 +216,7 @@ physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, 
 barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
 #barplot.rel$Sample <- factor(barplot.rel$Sample, levels=c("3d", "14d", "42d"))
 
-barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "days", y = "Abundance", fill = "Phylum", width = 0.2, title = "Relative Abundances of filtered ASVs", legend = "right", facet.by = c("Soils","CO2")) +  theme(plot.title = element_text(size = 10))
+barplot.relsoil1 <- barplot.rel %>% ggbarplot(x = "CO2", y = "Abundance", fill = "Phylum", width = 0.2, title = "Relative Abundances of filtered ASVs", legend = "right", facet.by = c("Soils","days")) +  theme(plot.title = element_text(size = 10))
 barplot.relsoil1
 ```
 
