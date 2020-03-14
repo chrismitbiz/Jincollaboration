@@ -3,12 +3,12 @@ title: "Jin Project 2"
 subtitle: "Elevated CO2 and phytate"
 output: html_document
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+  encoding=encoding,
+  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
@@ -19,7 +19,7 @@ knit: (function(input_file, encoding) {
 # encoding=encoding,
 # output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 #https://resources.github.com/whitepapers/github-and-rstudio/ #info on github page creation
-setwd("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/R_data")
+setwd("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration")
 #mypackages
 library(ggrepel)
 library(qiime2R)
@@ -51,7 +51,7 @@ options(kableExtra.auto_format = FALSE)
 # Metadata and phyloseq object bacteria
 ```{r phyloseq, warning=FALSE, message=FALSE, echo=FALSE, cache = TRUE}
 #https://forum.qiime2.org/t/tutorial-integrating-qiime2-and-r-for-data-visualization-and-analysis-using-qiime2r/4121?u=jbisanz
-metadata<-read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/metadata.tsv") #requires tidyverse
+metadata<-read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/metadata.tsv") #requires tidyverse
 metadata2 <- metadata[c(2:49),]
 #defining factors
 metadata2$Soils <- factor(metadata2$Soils, levels=c("Vertisol", "Chromosol"))
@@ -59,11 +59,13 @@ metadata2$CO2 <- factor(metadata2$CO2, levels=c("300", "500"))
 metadata2$days <-  factor(metadata2$days, levels=c("3d", "14d", "42d"))
 metadata2$Rep <-  factor(metadata2$Rep, levels=c("I", "II", "III", "IV"))
 
-SVs      <-   qiime2R::read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/qiime2_data/feature_table_insertiontreefiltered.qza")
-taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/qiime2_data/taxonomy_silva.tsv") %>% filter(Taxon != "categorical")  %>% rename(Feature.ID = `Feature ID`)
+SVs      <-   qiime2R::read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/feature_table_insertiontreefiltered.qza")
+
+taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/taxonomy_silva.tsv") %>% filter(Taxon != "categorical")  %>% rename(Feature.ID = `Feature ID`)
+
 taxtable <- taxonomy %>% as_tibble() %>% separate(Taxon, sep=";", c("Kingdom","Phylum","Class","Order","Family","Genus","Species")) 
 
-tree <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/qiime2_data/insertion-tree.qza")
+tree <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/insertion-tree.qza")
 
 physeqB <- phyloseq(
   otu_table(SVs$data, taxa_are_rows = T), 
