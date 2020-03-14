@@ -1,7 +1,9 @@
 ---
 title: "Jin Project 2"
 subtitle: "Elevated CO2 and phytate"
-output: html_document
+output: 
+  html_document:
+    toc: true
 editor_options: 
   chunk_output_type: console
 knit: (function(input_file, encoding) {
@@ -48,7 +50,7 @@ options(kableExtra.auto_format = FALSE)
 ```
 
 
-# Metadata and phyloseq object bacteria
+# Metadata and phyloseq object bacteria {#metadata}
 ```{r phyloseq, warning=FALSE, message=FALSE, echo=FALSE, cache = TRUE}
 #https://forum.qiime2.org/t/tutorial-integrating-qiime2-and-r-for-data-visualization-and-analysis-using-qiime2r/4121?u=jbisanz
 metadata<-read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/metadata.tsv") #requires tidyverse
@@ -135,7 +137,7 @@ print(paste("The number of reads and ASVs left after filtering is",round(sum(tax
 otutable <- otu_table(physeqB.flt) %>% as.data.frame() %>% rownames_to_column("Feature.ID") %>% left_join(taxonomy) %>% dplyr::select( - Confidence, -Feature.ID) %>% dplyr::select(Taxon, everything())
 write.csv(t(otutable), "otu.table_Jin2.csv", row.names = TRUE)
 ```
-go [back to top](#observations) 
+go [back to top](#metadata) 
 
 # Taxa barplots
 ## Comparison by soil
@@ -213,7 +215,7 @@ gg1
 ```
 
 <br/>
-go [back to top](#inspec) 
+go [back to top](#metadata) 
 
 ## Comparison by days and CO2 concentration
 ```{r bardays, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
@@ -301,7 +303,7 @@ barplot.relsoil2
 
 In the Chromosol, there were no significantly different abundances on genus level  
   
-go [back to top](#inspec)  
+go [back to top](#metadata)  
   
 
 
@@ -314,7 +316,7 @@ ggboxplot(., x = "Soils", y = "value", add = "jitter", facet.by = "variable", sc
   stat_compare_means( method = "wilcox") 
 ```
   
-go [back to top](#inspec) 
+go [back to top](#metadata) 
 
 
 ## by CO2
@@ -335,7 +337,7 @@ gg1
 
 ```
   
-go [back to top](#inspec) 
+go [back to top](#metadata) 
 
 ## by days and CO2
 ```{r alphadaysV, warning=FALSE, message=FALSE, echo=FALSE, fig.height=10,fig.asp= 0.9}
@@ -355,7 +357,7 @@ x = dev.off()
 gg1
 ```
   
-go [back to top](#inspec) 
+go [back to top](#metadata) 
 
 ```{r alphadaysC, echo=FALSE, message=FALSE, warning=FALSE,fig.height=10,fig.asp= 0.9}
 
@@ -374,7 +376,7 @@ x = dev.off()
 gg1
 ```
   
-go [back to top](#inspec) 
+go [back to top](#metadata) 
 
 # Beta diversity 
 ## Permanova  {#perm}
@@ -397,7 +399,7 @@ kable(perma.df , booktabs=TRUE, digits = 2)
 ```
 
   
-go [back to top](#inspec) 
+go [back to top](#metadata) 
 
 ## NMDS Bray
 ```{r nmds, message=FALSE, warning=FALSE, echo=FALSE, results=FALSE, cache = TRUE}
@@ -413,4 +415,4 @@ nmds1
 
 ```
   
-go [back to top](#inspec) 
+go [back to top](#metadata) 
