@@ -341,7 +341,7 @@ perm.soil <- adonis(otutable ~ Soils*CO2, data = meta.df ,method = "bray")
 
 perma.df <- data.frame(perm.soil$aov.tab[1:3,5:6])
 
-kable(perma.df)
+kable(perma.df , booktabs=TRUE, digits = 2)
 #perma.df  <- ggtexttable(format(perma.df, digits = 1))
 #perma.df <- annotate_figure(perma.df , top =  "PERMANOVAs (filtered and rarefied ASVs, bray curtis)")
 #perma.df
