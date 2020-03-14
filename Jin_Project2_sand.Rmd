@@ -3,15 +3,15 @@ title: "Jin Project 2"
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
- encoding=encoding,
- output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 subtitle: "Elevated CO2 and phytate"
 output: html_document
-
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
 #mywd
+#https://resources.github.com/whitepapers/github-and-rstudio/ #info on github page creation
 setwd("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/R_data")
 #mypackages
 library(ggrepel)
@@ -114,10 +114,8 @@ ggplot(sample_sum_df, aes(x = sum)) +
   theme(axis.title.y = element_blank())
 
 # barplot with red line through median value
-dat2 <- t(otu_table(physeqB.flt)) %>% melt(.) %>% arrange(desc(value)) %>% 
-ggbarplot(x = "Var2", y = "value",xlab = "Filtered")+ 
-    geom_hline(yintercept=median(rowSums(otu_table(physeqB.flt))), color="red")
-dat2
+dat2 <- t(otu_table(physeqB.flt)) %>% melt(.) %>% arrange(desc(value))
+ggbarplot(data = dat2, x = "Var2", y = "value",xlab = "Filtered", order = unique(dat2$Var2)) + geom_hline(yintercept=median(rowSums(otu_table(physeqB.flt))), color="red")
 
 summary(taxa_sums(physeqB.flt))
 print(paste("The number of reads and ASVs left after filtering is",round(sum(taxa_sums(physeqB.flt)) / sum(taxa_sums(physeqB))*100,2),"% and",round(ntaxa(physeqB.flt) / ntaxa(physeqB) *100,2),"%, a change from",round(sum(taxa_sums(physeqB))),"to",round(sum(taxa_sums(physeqB.flt))), "reads and", ntaxa(physeqB),"to",ntaxa(physeqB.flt),"ASVs. The median changed from", median(rowSums(otu_table(physeqB))),"to",median(rowSums(otu_table(physeqB.flt))),"reads per ASV."))
@@ -140,8 +138,6 @@ physeqB.flt.rel.glom <- phyloseq::transform_sample_counts(physeqB.flt.rel.glom, 
 barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
 #barplot
 barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width = 0.2, title = "Relative Abundances of filtered OTUs", legend = "right")
-
-
 ```
 go [back to top](#inspec) 
 
