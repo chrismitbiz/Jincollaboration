@@ -236,7 +236,7 @@ kable(wilcoxotest,booktabs=TRUE) %>%
 #barplot
 subs <- subset_taxa(physeqBSoil1, Genus %in% c("D_5__Bacillus", "D_5__Streptomyces"))
 subs <- psmelt(subs)
-barplot.relsoil1 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils","days"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7), scales = "free") 
+barplot.relsoil1 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils","days"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7), scales = "free") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 barplot.relsoil1 
 
 #Soil2
