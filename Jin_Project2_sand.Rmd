@@ -7,10 +7,17 @@ editor_options:
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
 #mywd
+#knit: (function(input_file, encoding) {
+#  out_dir <- 'docs';
+#  rmarkdown::render(input_file,
+# encoding=encoding,
+# output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
 #https://resources.github.com/whitepapers/github-and-rstudio/ #info on github page creation
 setwd("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/R_data")
 #mypackages
@@ -145,7 +152,7 @@ barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width 
 go [back to top](#inspec) 
 
 ## by CO2
-```{r barCO2, warning=FALSE, message=FALSE, echo=FALSE}
+```{r barCO2, warning=FALSE, message=FALSE, echo=FALSE,cache=TRUE}
 physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
 physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
 
@@ -173,7 +180,9 @@ pdf(NULL)
 gg1 <- ggarrange(barplot.relsoil2, barplot.relsoil1,  common.legend = TRUE, legend = "right")
 x = dev.off()
 gg1
+```
 
+```{r barCO2_class, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
 #CLASS LEVEL
 #Soil1
 #use relative abundances and glomerate to x level
@@ -200,6 +209,8 @@ gg1 <- ggarrange(barplot.relsoil2, barplot.relsoil1,  common.legend = TRUE, lege
 x = dev.off()
 gg1
 ```
+
+<br/>
 go [back to top](#inspec) 
 
 ## by days
@@ -328,7 +339,7 @@ p4 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("pielo
 ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
 pdf(NULL)
 gg1 <- ggarrange(p1,p2,p3,p4)
-gg1 <- annotate_figure(gg1, fig.lab  = "Vertisol",fig.lab.pos	= "top.left",fig.lab.size = 14, "bold")
+gg1 <- annotate_figure(gg1, fig.lab  = "Vertisol",fig.lab.pos	= "top.left",fig.lab.size = 14)
 x = dev.off()
 gg1
 ```
@@ -347,7 +358,7 @@ p4 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("pielo
 ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
 pdf(NULL)
 gg1 <- ggarrange(p1,p2,p3,p4)
-gg1 <- annotate_figure(gg1, fig.lab  = "Chromosol",fig.lab.pos	= "top.left",fig.lab.size = 14,"bold")
+gg1 <- annotate_figure(gg1, fig.lab  = "Chromosol",fig.lab.pos	= "top.left",fig.lab.size = 14)
 x = dev.off()
 gg1
 ```
