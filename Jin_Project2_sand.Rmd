@@ -295,8 +295,7 @@ barplot.relsoil2
 
 ```
 
-In the Chromosol, there were no significantly different abundances on genus level  
-  
+
 go [back to top](#metadata)  
   
 
