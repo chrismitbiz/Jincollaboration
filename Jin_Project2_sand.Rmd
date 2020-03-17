@@ -5,13 +5,12 @@ output:
   html_document:
     toc: true
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
-  rmarkdown::render(input_file,
   encoding=encoding,
   output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
-
+  rmarkdown::render(input_file,
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
@@ -64,15 +63,15 @@ metadata2$Rep <-  factor(metadata2$Rep, levels=c("I", "II", "III", "IV"))
 
 SVs      <-   qiime2R::read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/feature_table.qza")
 
-taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomoy_silva.tsv") %>% filter(Taxon != "categorical")  %>% rename(Feature.ID = `Feature ID`)
+taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomoy_silva.tsv")  %>% rename(Feature.ID = `Feature ID`)
 
 taxtable <- taxonomy %>% as_tibble() %>% separate(Taxon, sep=";", c("Kingdom","Phylum","Class","Order","Family","Genus","Species")) 
 
-#tree <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/insertion-tree.qza")
+tree <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/insertion-tree.qza")
 
 physeqB <- phyloseq(
   otu_table(SVs$data, taxa_are_rows = T), 
-#  phy_tree(tree$data), 
+  phy_tree(tree$data), 
   tax_table(as.data.frame(taxtable) %>% dplyr::select(-Confidence) %>% column_to_rownames("Feature.ID") %>% as.matrix()), 
   sample_data(metadata2 %>% as.data.frame() %>% column_to_rownames("#SampleID")))
 
