@@ -61,17 +61,17 @@ metadata2$CO2 <- factor(metadata2$CO2, levels=c("300", "500"))
 metadata2$days <-  factor(metadata2$days, levels=c("3d", "14d", "42d"))
 metadata2$Rep <-  factor(metadata2$Rep, levels=c("I", "II", "III", "IV"))
 
-SVs      <-   qiime2R::read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/feature_table_insertiontreefiltered.qza")
+SVs      <-   qiime2R::read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/feature_table.qza")
 
-taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/taxonomy_silva.tsv") %>% filter(Taxon != "categorical")  %>% rename(Feature.ID = `Feature ID`)
+taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomoy_silva.tsv") %>% filter(Taxon != "categorical")  %>% rename(Feature.ID = `Feature ID`)
 
 taxtable <- taxonomy %>% as_tibble() %>% separate(Taxon, sep=";", c("Kingdom","Phylum","Class","Order","Family","Genus","Species")) 
 
-tree <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/insertion-tree.qza")
+#tree <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files/insertion-tree.qza")
 
 physeqB <- phyloseq(
   otu_table(SVs$data, taxa_are_rows = T), 
-  phy_tree(tree$data), 
+#  phy_tree(tree$data), 
   tax_table(as.data.frame(taxtable) %>% dplyr::select(-Confidence) %>% column_to_rownames("Feature.ID") %>% as.matrix()), 
   sample_data(metadata2 %>% as.data.frame() %>% column_to_rownames("#SampleID")))
 
@@ -110,7 +110,7 @@ physeqB.flt = filter_taxa(physeqB.flt , function(x) sum(x > 0) > (0.04*length(x)
 physeqB.flt = subset_taxa(physeqB.flt, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized"))
 
 #rarefaction curve
-rarecurve(t(otu_table(physeqB.flt)), step=200, sample = 7000, label = FALSE) 
+rarecurve(t(otu_table(physeqB.flt)), step=200, sample = min(colSums(otu_table(physeqB.flt))), label = FALSE) 
 
 #taxatables for reference
 taxtableB.fltr <- data.frame(phyloseq::tax_table(physeqB.flt)@.Data)
@@ -153,7 +153,7 @@ barplot.rel <- psmelt(physeqB.flt.rel.glom) %>%  arrange(desc(Phylum))
 #barplot
 barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width = 0.2, title = "Relative Abundances of filtered OTUs", legend = "right")
 ```
-go [back to top](#inspec) 
+go [back to top](#metadata) 
 
 ## Comparison by CO2
 ```{r barCO2, warning=FALSE, message=FALSE, echo=FALSE,cache=TRUE}
