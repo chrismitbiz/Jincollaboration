@@ -5,12 +5,13 @@ output:
   html_document:
     toc: true
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
   encoding=encoding,
   output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
@@ -261,7 +262,7 @@ kable(wilcoxotest %>% filter(Genus != "") %>% filter(Genus != "D_5__metagenome")
 
 #barplot
 barplot.rel   <- phyloseq::transform_sample_counts(physeqBSoil1, function(x) x / sum(x) )
-subs <- subset_taxa(barplot.rel, Genus %in% c("D_5__Bacillus", "D_5__Paenibacillus","D_5__Agromyces", "D_5__Pseudonocardia", "D_5__Aeromicrobium"))
+subs <- subset_taxa(barplot.rel, Genus %in% c("D_5__Bacillus", "D_5__Paenibacillus"))
 subs <- psmelt(subs)
 barplot.relsoil1 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils","days"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7), scales = "free") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 barplot.relsoil1 
@@ -288,7 +289,7 @@ kable(wilcoxotest, booktabs=TRUE) %>%
 
 #barplot
 barplot.rel   <- phyloseq::transform_sample_counts(physeqBSoil2, function(x) x / sum(x) )
-subs <- subset_taxa(barplot.rel, Genus %in% c("D_5__Bacillus", "D_5__Burkholderia-Caballeronia-Paraburkholderia"))
+subs <- subset_taxa(barplot.rel, Genus %in% c("D_5__Bacillus", "D_5__Skermanella","D_5__Paenibacillus","D_5__Agromyces","D_5__Acidothermus","D_5__Rubrobacter"))
 subs <- psmelt(subs)
 barplot.relsoil2 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils","days"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7), scales = "free") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 barplot.relsoil2 

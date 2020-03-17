@@ -74,13 +74,13 @@ source activate qiime2-2020.2
 
 ###-----------------------------------BUILD PHYLOGENETIC TREE (FRAGMENT INSERTION)-------------------------------------
 
-qiime fragment-insertion sepp --i-representative-sequences rep_sequences.qza --i-reference-database ~/17996021/M2_Qiime_output_Bacteria2020run/sepp-refs-silva-128.qza --o-tree insertion-tree.qza --o-placements insertion-placements.qza
+qiime fragment-insertion sepp --i-representative-sequences rep_sequences.qza --i-reference-database ~/M2_Qiime_output_Bacteria2020run/sepp-refs-silva-128.qza --o-tree insertion-tree.qza --o-placements insertion-placements.qza
 
 qiime fragment-insertion filter-features --i-table feature_table.qza --i-tree insertion-tree.qza --o-filtered-table feature_table_insertiontreefiltered.qza --o-removed-table removed_features.qza
 
-qiime fragment-insertion sepp --i-representative-sequences rep_sequences.qza --i-reference-database sepp-refs-gg-13-8.qza --o-tree insertion-tree_gg.qza --o-placements insertion-placements_gg.qza
+#qiime fragment-insertion sepp --i-representative-sequences rep_sequences.qza --i-reference-database sepp-refs-gg-13-8.qza --o-tree insertion-tree_gg.qza --o-placements insertion-placements_gg.qza
 
-qiime fragment-insertion filter-features --i-table feature_table.qza --i-tree insertion-tree.qza --o-filtered-table feature_table_insertiontreefiltered_gg.qza --o-removed-table removed_features_gg.qza
+#qiime fragment-insertion filter-features --i-table feature_table.qza --i-tree insertion-tree.qza --o-filtered-table feature_table_insertiontreefiltered_gg.qza --o-removed-table removed_features_gg.qza
 
 
 
