@@ -2,15 +2,20 @@
 title: "Jin Project 2"
 subtitle: "Elevated CO2 and phytate"
 output: 
-  html_document:
-    toc: true
+  bookdown::html_document2:
+    fig_caption: yes
+    toc: yes
+    toc_float: true
+    number_sections: false
+always_allow_html: true
 editor_options: 
   chunk_output_type: console
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
+  rmarkdown::render(input_file,
   encoding=encoding,
   output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
-  rmarkdown::render(input_file,
+  
 ---
 
 ```{r packages, message=FALSE, warning=FALSE, echo=FALSE}
@@ -141,7 +146,7 @@ go [back to top](#metadata)
 
 # Taxa barplots
 ## Comparison by soil
-```{r barsoil, warning=FALSE, message=FALSE, echo=FALSE}
+```{r barsoil, warning=FALSE, message=FALSE, echo=FALSE, fig.cap = "taxabarplot1"}
 #create plotting tables
 #use relative abundances and glomerate to x level
 physeqB.flt.rel.glom <- tax_glom(physeqB.flt, "Phylum")
@@ -156,7 +161,7 @@ barplot.rel %>% ggbarplot(x = "Sample", y = "Abundance", fill = "Phylum", width 
 go [back to top](#metadata) 
 
 ## Comparison by CO2
-```{r barCO2, warning=FALSE, message=FALSE, echo=FALSE,cache=TRUE}
+```{r barCO2, warning=FALSE, message=FALSE, echo=FALSE,cache=TRUE, fig.cap = "taxabarplot2"}
 physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
 physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
 
@@ -186,7 +191,7 @@ x = dev.off()
 gg1
 ```
 
-```{r barCO2_class, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
+```{r barCO2_class, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE, fig.cap = "taxabarplot3"}
 #CLASS LEVEL
 #Soil1
 #use relative abundances and glomerate to x level
@@ -218,7 +223,7 @@ gg1
 go [back to top](#metadata) 
 
 ## Comparison by days and CO2 concentration
-```{r bardays, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
+```{r bardays, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE, fig.cap = "taxabarplot4"}
 #Phylum level
 #use relative abundances and glomerate to x level
 physeqB.flt.rel.glom <- tax_glom(physeqB.flt, "Phylum")
@@ -244,7 +249,7 @@ barplot.relsoil1
 
 
 ## Vertisol - Sign. diff. on genus level (Wilcoxon test *p* < 0.05 holm corrected)
-```{r vertsigdiff, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE}
+```{r vertsigdiff, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, fig.cap = "some selected features"}
 #Soil1 data
 physeqBSoil1 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Vertisol", physeqB.flt)
 #physeqBSoil1 = subset_taxa(physeqBSoil1, !is.na(Genus) & !Genus %in% c("", "uncharacterized"))
@@ -269,7 +274,7 @@ barplot.relsoil1
   
   
 ## Chromosol - Sign. diff. on genus level (Wilcoxon test *p* < 0.05 holm corrected)
-```{r chromosigdiff, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE}
+```{r chromosigdiff, echo=FALSE, fig.width=10, message=FALSE, warning=FALSE, cache=TRUE, fig.cap = "some selected features"}
 
 #Soil2 data
 physeqBSoil2 <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
@@ -303,7 +308,7 @@ go [back to top](#metadata)
 
 # Alpha diversity {#alphadiversity}
 ## by soil
-```{r alphasoil, warning=FALSE, message=FALSE, echo=FALSE, cache=TRUE}
+```{r alphasoil, warning=FALSE, message=FALSE, echo=FALSE, cache=TRUE, fig.cap = "alpha diversity"}
 as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed", "InvSimpson", "Shannon", "pielou_ev"))  %>%
 ggboxplot(., x = "Soils", y = "value", add = "jitter", facet.by = "variable", scales = "free", ylab = "alpha diversity") +
   stat_compare_means( method = "wilcox") 
@@ -313,7 +318,7 @@ go [back to top](#metadata)
 
 
 ## by CO2
-```{r alphaCO2, echo=FALSE, fig.height=10,fig.asp= 0.9, message=FALSE, warning=FALSE}
+```{r alphaCO2, echo=FALSE, fig.height=10,fig.asp= 0.9, message=FALSE, warning=FALSE, fig.cap = "alpha diversity"}
 p1 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed"))  %>%
 ggboxplot(., x = "CO2", y = "value", add = "jitter", facet.by = c("Soils","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "wilcox") 
 p2 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("InvSimpson"))  %>%
@@ -333,7 +338,7 @@ gg1
 go [back to top](#metadata) 
 
 ## by days and CO2
-```{r alphadaysV, warning=FALSE, message=FALSE, echo=FALSE, fig.height=10,fig.asp= 0.9}
+```{r alphadaysV, warning=FALSE, message=FALSE, echo=FALSE, fig.height=10,fig.asp= 0.9, fig.cap = "alpha diversity"}
 
 p1 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed"))  %>% filter(Soils == "Vertisol") %>% 
 ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
@@ -352,7 +357,7 @@ gg1
   
 go [back to top](#metadata) 
 
-```{r alphadaysC, echo=FALSE, message=FALSE, warning=FALSE,fig.height=10,fig.asp= 0.9}
+```{r alphadaysC, echo=FALSE, message=FALSE, warning=FALSE,fig.height=10,fig.asp= 0.9, fig.cap = "alpha diversity"}
 
 p1 <- as.data.frame(sample_data(physeqB.flt)) %>% melt(., measure.var = c("Observed"))  %>% filter(Soils == "Chromosol") %>% 
 ggboxplot(., x = "days", y = "value", add = "jitter", facet.by = c("CO2","variable"), scales = "free", ylab = "alpha diversity") + stat_compare_means( method = "kruskal") 
@@ -369,7 +374,15 @@ x = dev.off()
 gg1
 ```
   
+<br/>
+
+(Fig. \@ref(fig:alphadaysC))  
+The alpha diversity in the Chromosol was more sensitive to elevated CO~2~ compared to the Vertisol. Over time the number of ASVs reduced and this was most significant in the Chromosol and at elevated CO~2~. In the Chromosol, lower ASV numbers after 3 days were occured along with greater diversity (Shannon, InvSimpson and Pilou Evenness) but exclusively at elevated CO~2~ concentrations. At ambient CO~2~ no changes in alpha diversity were observed in this soil. In the Vertisol diversity increased after 3 days under both, ambient and elevated CO~2~ concentrations. 
+
+<br/>
+
 go [back to top](#metadata) 
+
 
 # Beta diversity 
 ## Permanova  {#perm}
@@ -395,7 +408,7 @@ kable(perma.df , booktabs=TRUE, digits = 2)
 go [back to top](#metadata) 
 
 ## NMDS Bray
-```{r nmds, message=FALSE, warning=FALSE, echo=FALSE, results=FALSE, cache = TRUE}
+```{r nmds, message=FALSE, warning=FALSE, echo=FALSE, results=FALSE, cache = TRUE, fig.cap = "beta diversity"}
 ps.perm <- rarefy_even_depth(physeqB.flt, sample.size = min(colSums(otu_table(physeqB.flt))),  rngseed = TRUE, replace = TRUE, trimOTUs = TRUE)
 ps.perm <- phyloseq::transform_sample_counts(ps.perm, function(x) x / sum(x) )
 ord_nmds <- phyloseq::ordinate(ps.perm, "NMDS", "bray")
