@@ -881,9 +881,13 @@ bin25 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 25"]]), nr
 bin25  <- bin25 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
 bin25  <- bin25 %>% mutate(Bin = "Bin25") %>% dplyr::select(Bin, everything())
 
+bin26 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 26"]]), nrow=length(bin.projection$otus[["Bin 26"]]), byrow=T),stringsAsFactors=FALSE)
+bin26  <- bin26 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin26  <- bin26 %>% mutate(Bin = "Bin26") %>% dplyr::select(Bin, everything())
+
 # sig. factors for CO2 1*, 3. , 6*, 11*, 12***, 14*, 17*, 21., 22*, 24***, 25**
 
-bin <- rbind(bin3, bin6, bin11, bin12,bin14, bin17,bin22, bin24, bin25)
+bin <- rbind(bin3, bin6, bin11, bin12,bin14, bin17,bin22, bin24, bin25 , bin26)
 kable(bin, booktabs=TRUE, caption = "Taxa represented in bins") %>% kable_styling(latex_options="scale_down")
 
 ```
