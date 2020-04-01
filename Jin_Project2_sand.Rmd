@@ -841,37 +841,37 @@ taxtable <- tax_table(physeqtest)@.Data %>% as.data.frame %>% rownames_to_column
 #bin2  <- bin2 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species, -Genus) %>% unique
 #bin2  <- bin2 %>% mutate(Bin = "Bin2") %>% dplyr::select(Bin, everything())
 
-bin3 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 3"]]), nrow=length(bin.projection$otus[["Bin 3"]]), byrow=T),stringsAsFactors=FALSE)
-bin3  <- bin3 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
-bin3  <- bin3 %>% mutate(Bin = "Bin3") %>% dplyr::select(Bin, everything())
+bin4 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 4"]]), nrow=length(bin.projection$otus[["Bin 4"]]), byrow=T),stringsAsFactors=FALSE)
+bin4  <- bin4 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin4  <- bin4 %>% mutate(Bin = "Bin4") %>% dplyr::select(Bin, everything())
 
 #bin4 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 4"]]), nrow=length(bin.projection$otus[["Bin 4"]]), byrow=T),stringsAsFactors=FALSE)
 #bin4  <- bin4 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
 #bin4  <- bin4 %>% mutate(Bin = "Bin4") %>% dplyr::select(Bin, everything())
 
-bin6 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 6"]]), nrow=length(bin.projection$otus[["Bin 6"]]), byrow=T),stringsAsFactors=FALSE)
-bin6  <- bin6 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
-bin6  <- bin6 %>% mutate(Bin = "Bin6") %>% dplyr::select(Bin, everything())
-
-bin11 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 11"]]), nrow=length(bin.projection$otus[["Bin 11"]]), byrow=T),stringsAsFactors=FALSE)
-bin11  <- bin11 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
-bin11  <- bin11 %>% mutate(Bin = "Bin11") %>% dplyr::select(Bin, everything())
+bin7 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 7"]]), nrow=length(bin.projection$otus[["Bin 7"]]), byrow=T),stringsAsFactors=FALSE)
+bin7  <- bin7 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin7  <- bin7 %>% mutate(Bin = "Bin7") %>% dplyr::select(Bin, everything())
 
 bin12 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 12"]]), nrow=length(bin.projection$otus[["Bin 12"]]), byrow=T),stringsAsFactors=FALSE)
 bin12  <- bin12 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
 bin12  <- bin12 %>% mutate(Bin = "Bin12") %>% dplyr::select(Bin, everything())
 
-bin14 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 14"]]), nrow=length(bin.projection$otus[["Bin 14"]]), byrow=T),stringsAsFactors=FALSE)
-bin14  <- bin14 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
-bin14  <- bin14 %>% mutate(Bin = "Bin14") %>% dplyr::select(Bin, everything())
+bin13 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 13"]]), nrow=length(bin.projection$otus[["Bin 13"]]), byrow=T),stringsAsFactors=FALSE)
+bin13  <- bin13 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin13  <- bin13 %>% mutate(Bin = "Bin13") %>% dplyr::select(Bin, everything())
 
-bin17 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 17"]]), nrow=length(bin.projection$otus[["Bin 17"]]), byrow=T),stringsAsFactors=FALSE)
-bin17  <- bin17 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
-bin17  <- bin17 %>% mutate(Bin = "Bin17") %>% dplyr::select(Bin, everything())
+bin15 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 15"]]), nrow=length(bin.projection$otus[["Bin 15"]]), byrow=T),stringsAsFactors=FALSE)
+bin15  <- bin15 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin15  <- bin15 %>% mutate(Bin = "Bin15") %>% dplyr::select(Bin, everything())
 
-bin22 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 22"]]), nrow=length(bin.projection$otus[["Bin 22"]]), byrow=T),stringsAsFactors=FALSE)
-bin22  <- bin22 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
-bin22  <- bin22 %>% mutate(Bin = "Bin22") %>% dplyr::select(Bin, everything())
+bin18 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 18"]]), nrow=length(bin.projection$otus[["Bin 18"]]), byrow=T),stringsAsFactors=FALSE)
+bin18  <- bin18 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin18  <- bin18 %>% mutate(Bin = "Bin18") %>% dplyr::select(Bin, everything())
+
+bin23 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 23"]]), nrow=length(bin.projection$otus[["Bin 23"]]), byrow=T),stringsAsFactors=FALSE)
+bin23  <- bin23 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin23  <- bin23 %>% mutate(Bin = "Bin23") %>% dplyr::select(Bin, everything())
 
 bin24 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 24"]]), nrow=length(bin.projection$otus[["Bin 24"]]), byrow=T),stringsAsFactors=FALSE)
 bin24  <- bin24 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
@@ -887,7 +887,7 @@ bin26  <- bin26 %>% mutate(Bin = "Bin26") %>% dplyr::select(Bin, everything())
 
 # sig. factors for CO2 1*, 3. , 6*, 11*, 12***, 14*, 17*, 21., 22*, 24***, 25**
 
-bin <- rbind(bin3, bin6, bin11, bin12,bin14, bin17,bin22, bin24, bin25 , bin26)
+bin <- rbind(bin4, bin7, bin12, bin13,bin14, bin18,bin23, bin24, bin25 , bin26)
 kable(bin, booktabs=TRUE, caption = "Taxa represented in bins") %>% kable_styling(latex_options="scale_down")
 
 ```
