@@ -764,7 +764,7 @@ plot(selb.CO2$global.plot)
 
 
 ## Phylofactor
-```{r, phylfactor2, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.cap= "Change of relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days+CO2, n = 24)"}
+```{r, phylfactor2, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=FALSE, fig.cap= "Change of relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days+CO2, n = 24)."}
 require(phylofactor)
 
 taxonomygg <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomy_gg.tsv") %>% dplyr::rename(Feature.ID = `Feature ID`)
