@@ -444,7 +444,7 @@ plot(selb.CO2$global.plot)
 ```
 
 ## Phylofactor
-```{r, phylfactor1, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.cap= "Change of relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (n = 24)."}
+```{r, phylfactor1, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.cap= "Change of relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model: days+CO2, n = 24)."}
 require(phylofactor)
 
 taxonomygg <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomy_gg.tsv") %>% dplyr::rename(Feature.ID = `Feature ID`)
@@ -484,7 +484,7 @@ my.data.frame <- data.frame('days'=days,'CO2'=CO2)
 PF.mult <- readRDS('~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/phylofactor/PF.mult_VERTISOLdays_CO2')
 #PF.mult$factors
 #summary(aov(PF.mult$models[[25]]))
-#factor 2, 4 7,8, 14, 16, 17, 21, 22, 23, 24, 27, 29, 30, 31, 35, 39, 42, 43, 48, 49
+#sig. factors for CO2 2, 4 7,8, 14, 16, 17, 21, 22, 23, 24, 27, 29, 30, 31, 35, 39, 42, 43, 48, 49
 
 #smry <- pf.summary(PF.mult, taxadf,  factor=4)
 #td <- pf.tidy(smry)
@@ -495,17 +495,16 @@ PF.mult <- readRDS('~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/phy
 #plot(days,smry$ilr,main='Isometric log-ratio',ylab='ILR balance')
 #plot(days,smry$MeanRatio,main='Ratio of Geometric Means',ylab='Group1/Group2')
 
-bin.projection <- pf.BINprojection(PF.mult,factor=15, rel.abund=T)  
+bin.projection <- pf.BINprojection(PF.mult,factor=15, rel.abund=T, prediction=T)  
 bin.taxa <- bin.projection$otus %>% lapply(.,FUN=function(otus,tax) OTUtoTaxa(otus,tax,common.name = F),tax=taxadf)
 #plot stacked relative abundances 
 par(mfrow=c(1,1))
 bin.observed.relativeAbundances <- bin.projection$Data
 require(plotrix)
-binnm <- names(bin.projection$otus)
-colori4<-c("red","green","blue", "purple", "lightblue")
+#binnm <- names(bin.projection$otus)
 colori4<-c("red","orangered1", "orange","yellow", "green1","green2", "aquamarine2", "lightblue","cadetblue3", "royalblue1", "blue", "blue","darkslateblue", "purple", "magenta2", "deeppink3")
 stackpoly(t(bin.observed.relativeAbundances),stack=T,main='Observed Rel-Abund. (Vertisol)',xaxlab = c('300', '3d','500', '300','14d','500', '300','42d', '500'),xat = c(2.5, 4.5, 6.5, 10.5, 12.5, 14.5, 18.5, 20.5, 22.5))
-legend("left", legend=binnm, fill=smoothColors(colori4),cex=0.5 )
+legend("left", legend=rownames(bin.observed.relativeAbundances), fill=smoothColors(colori4),cex=0.6 )
 ```
 
 ```{r phylofactortablesVERT, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
@@ -551,7 +550,7 @@ bin16  <- bin16 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %
 bin16  <- bin16 %>% mutate(Bin = "Bin16") %>% dplyr::select(Bin, everything())
 
 bin <- rbind(bin2, bin3, bin4, bin7,bin8, bin14,bin15, bin16)
-kable(bin, booktabs=TRUE, caption = "Taxa of bin 4") %>% kable_styling(latex_options="scale_down")
+kable(bin, booktabs=TRUE, caption = "Taxa represented in bins") %>% kable_styling(latex_options="scale_down")
 
 
 ```
@@ -761,6 +760,131 @@ plot(selb.CO2$global.plot)
 #selb.CO2$glm #regression results
 #selb.CO2 <- selbal(x,y) # whole process to get the scatter plot only with all features as numerator and denominator. 
 #(selb.CO2$global.plot)
+```
+
+
+## Phylofactor
+```{r, phylfactor2, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.cap= "Change of relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days+CO2, n = 24)."}
+require(phylofactor)
+
+taxonomygg <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomy_gg.tsv") %>% dplyr::rename(Feature.ID = `Feature ID`)
+taxtablegg <- taxonomygg %>% as_tibble() %>% separate(Taxon, sep=";", c("Kingdom","Phylum","Class","Order","Family","Genus","Species")) 
+tree_gg <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/insertion-tree_gg.qza")
+
+physeqB_gg <- phyloseq(
+  otu_table(SVs$data, taxa_are_rows = T), 
+  phy_tree(tree_gg$data), 
+  tax_table(as.data.frame(taxtablegg) %>% dplyr::select(-Confidence) %>% column_to_rownames("Feature.ID") %>% as.matrix()), 
+  sample_data(metadata2 %>% as.data.frame() %>% column_to_rownames("#SampleID")))
+
+physeqB.flt <- prune_taxa(taxa_sums(physeqB_gg) >= 10, physeqB_gg)
+#tax_table(physeqB.flt)[, "Genus"] <- str_replace_all(tax_table(physeqB.flt)[, "Genus"], " g__", "")
+#tax_table(physeqB.flt)[, "Family"] <- str_replace_all(tax_table(physeqB.flt)[, "Family"], " f__", "")
+physeqB.flt <-  prune_samples(sample_data(physeqB.flt)$Soil == "Chromosol", physeqB.flt)
+physeqB.flt <- prune_taxa(taxa_sums(physeqB.flt) >= 10, physeqB.flt)
+summary(taxa_sums(physeqB.flt))
+physeqtest = filter_taxa(physeqB.flt , function(x) sum(x > 0) > (0.08*length(x)), TRUE) #minimum
+
+OTUTable <- as.data.frame(otu_table(physeqtest))  #Our OTU table. Rows are OTUs and columns are samples
+CO2 <- sample_data(physeqtest)$CO2        #Our independent variable
+days <- sample_data(physeqtest)$days
+tree <- phyloseq::phy_tree(physeqtest)
+tree <- ape::unroot(tree)
+taxadf <- as.data.frame(tax_table(physeqtest)@.Data)
+taxadf <- unite(taxadf, taxonomy, sep = ";", remove = TRUE, na.rm = FALSE) %>% rownames_to_column("OTU_ID")
+#taxadf <- taxadf %>% filter(Feature.ID %in% rownames(OTUTable)) %>% dplyr::rename(OTU_ID = Feature.ID) %>% dplyr::rename(taxonomy = Taxon)
+#all(rownames(OTUTable) == tree$tip.label)
+#all(tree$tip.label == taxadf$OTU_ID)
+
+#testing which phylogenetic edges capture variation due to both time of sampling and CO2 cc
+frmla <- Data ~ days+CO2 #Must put ILR coordinates as "Data"
+my.data.frame <- data.frame('days'=days,'CO2'=CO2)
+#PF.mult <- PhyloFactor(OTUTable,tree,X=my.data.frame,frmla=frmla,nfactors=25)
+#saveRDS(PF.mult,'~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/phylofactor/PF.mult_CHROMOSOLdays+CO2')
+PF.mult <- readRDS('~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/phylofactor/PF.mult_CHROMOSOLdays+CO2')
+#PF.mult$factors
+#summary(aov(PF.mult$models[[25]]))
+# sig. factors for CO2 1*, 3. , 6*, 11*, 12***, 14*, 17*, 21., 22*, 24***, 25**
+
+#smry <- pf.summary(PF.mult, taxadf,  factor=12)
+#td <- pf.tidy(smry)
+#td 
+#par(mfrow=c(1,2))
+#plot(CO2,smry$ilr,main='Isometric log-ratio',ylab='ILR balance')
+#plot(CO2,smry$MeanRatio,main='Ratio of Geometric Means',ylab='Group1/Group2')
+#plot(days,smry$ilr,main='Isometric log-ratio',ylab='ILR balance')
+#plot(days,smry$MeanRatio,main='Ratio of Geometric Means',ylab='Group1/Group2')
+
+bin.projection <- pf.BINprojection(PF.mult,factor=25, rel.abund=T, prediction=T)  
+#bin.taxa <- bin.projection$otus %>% lapply(.,FUN=function(otus,tax) OTUtoTaxa(otus,tax,common.name = F),tax=taxadf)
+#plot stacked relative abundances 
+#par(mfrow=c(1,1))
+bin.observed.relativeAbundances <- bin.projection$Data
+require(plotrix)
+colori4<-c("red","orangered3", "orangered", "orange2","gold1", "greenyellow", "green1","green2", "green3", "limegreen", "aquamarine2", "lightblue","cadetblue3", "royalblue1", "blue", "blue","blue", "blue", "blue", "darkorchid4", "darkorchid2","mediumorchid1","orchid2","magenta2","deeppink3","firebrick1")
+stackpoly(t(bin.observed.relativeAbundances),stack=T,main='Observed Rel-Abund. (Chromosol)',xaxlab = c('300', '3d','500', '300','14d','500', '300','42d', '500'),xat = c(2.5, 4.5, 6.5, 10.5, 12.5, 14.5, 18.5, 20.5, 22.5))
+legend("left", legend=rownames(bin.observed.relativeAbundances),fill=smoothColors(colori4), cex=0.6 )
+```
+
+```{r phylofactortablesCHROM, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+#Tables to show taxa which form part of important bins 
+taxtable <- tax_table(physeqtest)@.Data %>% as.data.frame %>% rownames_to_column("OTU_ID")
+
+# sig. factors for CO2 1*, 3. , 6*, 11*, 12***, 14*, 17*, 21., 22*, 24***, 25**
+
+#bin1 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 1"]]), nrow=length(bin.projection$otus[["Bin 1"]]), byrow=T),stringsAsFactors=FALSE)
+#bin1  <- bin1 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species, -Genus, -Family, -Class, -Order) %>% unique
+#bin1  <- bin1 %>% mutate(Bin = "Bin1") %>% dplyr::select(Bin, everything())
+
+#bin2 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 2"]]), nrow=length(bin.projection$otus[["Bin 2"]]), byrow=T),stringsAsFactors=FALSE)
+#bin2  <- bin2 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species, -Genus) %>% unique
+#bin2  <- bin2 %>% mutate(Bin = "Bin2") %>% dplyr::select(Bin, everything())
+
+bin3 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 3"]]), nrow=length(bin.projection$otus[["Bin 3"]]), byrow=T),stringsAsFactors=FALSE)
+bin3  <- bin3 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin3  <- bin3 %>% mutate(Bin = "Bin3") %>% dplyr::select(Bin, everything())
+
+#bin4 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 4"]]), nrow=length(bin.projection$otus[["Bin 4"]]), byrow=T),stringsAsFactors=FALSE)
+#bin4  <- bin4 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+#bin4  <- bin4 %>% mutate(Bin = "Bin4") %>% dplyr::select(Bin, everything())
+
+bin6 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 6"]]), nrow=length(bin.projection$otus[["Bin 6"]]), byrow=T),stringsAsFactors=FALSE)
+bin6  <- bin6 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin6  <- bin6 %>% mutate(Bin = "Bin6") %>% dplyr::select(Bin, everything())
+
+bin11 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 11"]]), nrow=length(bin.projection$otus[["Bin 11"]]), byrow=T),stringsAsFactors=FALSE)
+bin11  <- bin11 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin11  <- bin11 %>% mutate(Bin = "Bin11") %>% dplyr::select(Bin, everything())
+
+bin12 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 12"]]), nrow=length(bin.projection$otus[["Bin 12"]]), byrow=T),stringsAsFactors=FALSE)
+bin12  <- bin12 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin12  <- bin12 %>% mutate(Bin = "Bin12") %>% dplyr::select(Bin, everything())
+
+bin14 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 14"]]), nrow=length(bin.projection$otus[["Bin 14"]]), byrow=T),stringsAsFactors=FALSE)
+bin14  <- bin14 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin14  <- bin14 %>% mutate(Bin = "Bin14") %>% dplyr::select(Bin, everything())
+
+bin17 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 17"]]), nrow=length(bin.projection$otus[["Bin 17"]]), byrow=T),stringsAsFactors=FALSE)
+bin17  <- bin17 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin17  <- bin17 %>% mutate(Bin = "Bin17") %>% dplyr::select(Bin, everything())
+
+bin22 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 22"]]), nrow=length(bin.projection$otus[["Bin 22"]]), byrow=T),stringsAsFactors=FALSE)
+bin22  <- bin22 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin22  <- bin22 %>% mutate(Bin = "Bin22") %>% dplyr::select(Bin, everything())
+
+bin24 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 24"]]), nrow=length(bin.projection$otus[["Bin 24"]]), byrow=T),stringsAsFactors=FALSE)
+bin24  <- bin24 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin24  <- bin24 %>% mutate(Bin = "Bin24") %>% dplyr::select(Bin, everything())
+
+bin25 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 25"]]), nrow=length(bin.projection$otus[["Bin 25"]]), byrow=T),stringsAsFactors=FALSE)
+bin25  <- bin25 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
+bin25  <- bin25 %>% mutate(Bin = "Bin25") %>% dplyr::select(Bin, everything())
+
+# sig. factors for CO2 1*, 3. , 6*, 11*, 12***, 14*, 17*, 21., 22*, 24***, 25**
+
+bin <- rbind(bin3, bin6, bin11, bin12,bin14, bin17,bin22, bin24, bin25)
+kable(bin, booktabs=TRUE, caption = "Taxa represented in bins") %>% kable_styling(latex_options="scale_down")
+
 ```
 
 go [back to top](#metadata)  
