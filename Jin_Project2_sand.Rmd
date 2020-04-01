@@ -764,7 +764,7 @@ plot(selb.CO2$global.plot)
 
 
 ## Phylofactor
-```{r, phylfactor2, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.cap= "Change of relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days+CO2, n = 24)."}
+```{r, phylfactor2, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE, fig.cap= "Change of relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days+CO2, n = 24)"}
 require(phylofactor)
 
 taxonomygg <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomy_gg.tsv") %>% dplyr::rename(Feature.ID = `Feature ID`)
@@ -824,6 +824,7 @@ require(plotrix)
 colori4<-c("red","orangered3", "orangered", "orange2","gold1", "greenyellow", "green1","green2", "green3", "limegreen", "aquamarine2", "lightblue","cadetblue3", "royalblue1", "blue", "blue","blue", "blue", "blue", "darkorchid4", "darkorchid2","mediumorchid1","orchid2","magenta2","deeppink3","firebrick1")
 stackpoly(t(bin.observed.relativeAbundances),stack=T,main='Observed Rel-Abund. (Chromosol)',xaxlab = c('300', '3d','500', '300','14d','500', '300','42d', '500'),xat = c(2.5, 4.5, 6.5, 10.5, 12.5, 14.5, 18.5, 20.5, 22.5))
 legend("left", legend=rownames(bin.observed.relativeAbundances),fill=smoothColors(colori4), cex=0.6 )
+
 ```
 
 ```{r phylofactortablesCHROM, eval=TRUE, echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
