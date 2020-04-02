@@ -1295,14 +1295,14 @@ go [back to top](#metadata)
 <br/>
 
 
-# Bacillus and Paenibacillus
+# Bacillus, Paenibacillus, Symbiobacterium
 ```{r BacPae,  eval=TRUE, echo=FALSE, fig.width=8, fig.asp = 0.7, message=FALSE, warning=FALSE, cache=TRUE, fig.cap="Relative abundances of *Bacillus sp*. and *Paenibacillus sp*.. The abundances of these two genera were found to be significantly different in both soils at eleveated CO~2~ using Deseq2 and Aldex2 tests for abundances in day 14 or day 42"}
 
 physeqB.flt <- prune_taxa(taxa_sums(physeqB) >= 10, physeqB)
 tax_table(physeqB.flt)[, "Genus"] <- str_replace_all(tax_table(physeqB.flt)[, "Genus"], "D_5__", "")
 physeqtest <- tax_glom(physeqB.flt, "Genus")
 barplot.rel   <- phyloseq::transform_sample_counts(physeqtest , function(x) x / sum(x) )
-subs <- subset_taxa(barplot.rel, Genus %in% c("Bacillus", "Paenibacillus"))
+subs <- subset_taxa(barplot.rel, Genus %in% c("Bacillus", "Paenibacillus", "Symbiobacterium"))
 #subs <- subset_taxa(barplot.rel, Species %in% c(" s__horti"))
 subs <- psmelt(subs)
 barplot.relsoil1 <- subs   %>% ggbarplot(data = ., x = "Genus", y = "Abundance", add = "mean_se", facet.by = c("Soils","days"), fill = "CO2", width = 0.5, xlab = "", position = position_dodge(0.7), scales = "free") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
