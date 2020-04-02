@@ -568,7 +568,7 @@ par(mfrow=c(1,1))
 ```
 
 <br/>
-```{r boxplotsILRVERT, eval=TRUE, echo=FALSE, fig.width=7,  fig.asp = 1.6,message=FALSE, warning=FALSE, cache=FALSE, fig.cap= "Isometric Log Ratios (ILR) of taxa groups with abundances that significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days*CO2, n = 24)."}
+```{r boxplotsILRVERT, eval=TRUE, echo=FALSE, fig.width=7,  fig.asp = 1.8,message=FALSE, warning=FALSE, cache=FALSE, fig.cap= "Isometric Log Ratios (ILR) of taxa groups with abundances that significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days*CO2, n = 24)."}
 require(phylofactor)
 PF.mult <- readRDS('~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/phylofactor/PF.mult_VERTISOLdays+CO2')
 
