@@ -568,7 +568,7 @@ par(mfrow=c(1,1))
 ```
 
 <br/>
-```{r boxplotsILRVERT, eval=TRUE, echo=FALSE, fig.width=7,  fig.asp = 1.5,message=FALSE, warning=FALSE, cache=FALSE, fig.cap= "Isometric Log Ratios (ILR) of taxa groups with abundances that significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days*CO2, n = 24)."}
+```{r boxplotsILRVERT, eval=TRUE, echo=FALSE, fig.width=7,  fig.asp = 1.6,message=FALSE, warning=FALSE, cache=FALSE, fig.cap= "Isometric Log Ratios (ILR) of taxa groups with abundances that significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days*CO2, n = 24)."}
 require(phylofactor)
 PF.mult <- readRDS('~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/phylofactor/PF.mult_VERTISOLdays+CO2')
 
@@ -615,6 +615,17 @@ p1.1 <- ggboxplot(x = "days", y= "Meanratio", data = data.frame(days = days, Mea
 p1.2 <- ggarrange(p1.1, p1) 
 p1.3 <- annotate_figure(p1.2, fig.lab  = "f__Paenibacillaceae; g__Paenibacillus; s__" , fig.lab.pos	= "top.left",fig.lab.size = 14)
 
+smry <- pf.summary(PF.mult, taxadf,  factor=14)
+p1 <- ggboxplot(x = "CO2", y= "Meanratio", data = data.frame(CO2 = CO2, Meanratio = smry$ilr),ylab='ILR balance', fill = "royalblue1", add = "jitter") +
+  theme(plot.margin=unit(c(1, .5, 0.5, 0.5),"cm"))
+#ggboxplot(x = "CO2", y= "Meanratio", data = data.frame(CO2 = CO2, Meanratio = smry$MeanRatio), main='Ratio of Geometric Means',ylab='Group1/Group2')
+p1.1 <- ggboxplot(x = "days", y= "Meanratio", data = data.frame(days = days, Meanratio = smry$ilr),ylab='ILR balance', fill = "royalblue1", add = "jitter")+
+  theme(plot.margin=unit(c(1, .5, 0.5, 0.5),"cm"))
+#ggboxplot(x = "days", y= "Meanratio", data = data.frame(days = days, Meanratio = smry$MeanRatio), main='Ratio of Geometric Means',ylab='Group1/Group2')
+p1.2 <- ggarrange(p1.1, p1) 
+p1.5 <- annotate_figure(p1.2, fig.lab  = "f__Paenibacillaceae; g__Paenibacillus; s__amylolyticus" , fig.lab.pos	= "top.left",fig.lab.size = 14)
+
+
 smry <- pf.summary(PF.mult, taxadf,  factor=15)
 p1 <- ggboxplot(x = "CO2", y= "Meanratio", data = data.frame(CO2 = CO2, Meanratio = smry$ilr),ylab='ILR balance', fill = "blue", add = "jitter") +
   theme(plot.margin=unit(c(1, .5, 0.5, 0.5),"cm"))
@@ -624,7 +635,6 @@ p1.1 <- ggboxplot(x = "days", y= "Meanratio", data = data.frame(days = days, Mea
 #ggboxplot(x = "days", y= "Meanratio", data = data.frame(days = days, Meanratio = smry$MeanRatio), main='Ratio of Geometric Means',ylab='Group1/Group2')
 p1.2 <- ggarrange(p1.1, p1) 
 p1.4 <- annotate_figure(p1.2, fig.lab  = "c__Thermomicrobia; o__JG30-KF-CM45" , fig.lab.pos	= "top.left",fig.lab.size = 14)
-
 
 
 
@@ -650,7 +660,7 @@ p3.3 <- annotate_figure(p1.2, fig.lab  = "f__Bacillaceae; g__Bacillus; s__flexus
 
 
 pdf(NULL)
-boxplots <- ggarrange(p00.3, p0.3, p12.3, p1.3, p1.4, p2.3, p3.3, nrow = 7) 
+boxplots <- ggarrange(p00.3, p0.3, p12.3, p1.3, p1.5, p1.4, p2.3, p3.3, nrow = 8) 
 x = dev.off()
 boxplots
 ```
@@ -729,6 +739,10 @@ bin11  <- bin11 %>% mutate(Bin = "Bin11") %>% dplyr::select(Bin, everything())
 #bin14  <- bin14 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species) %>% unique
 #bin14  <- bin14 %>% mutate(Bin = "Bin14") %>% dplyr::select(Bin, everything())
 
+bin15 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 15"]]), nrow=length(bin.projection$otus[["Bin 15"]]), byrow=T),stringsAsFactors=FALSE)
+bin15  <- bin15 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species, - Kingdom) %>% unique
+bin15  <- bin15 %>% mutate(Bin = "Bin15") %>% dplyr::select(Bin, everything())
+
 
 bin16 <-  data.frame(OTU_ID = matrix(unlist(bin.projection$otus[["Bin 16"]]), nrow=length(bin.projection$otus[["Bin 16"]]), byrow=T),stringsAsFactors=FALSE)
 bin16  <- bin16 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species, - Kingdom) %>% unique
@@ -759,7 +773,7 @@ bin26  <- bin26 %>% left_join(taxtable) %>%  dplyr::select(-OTU_ID, - Species, -
 bin26  <- bin26 %>% mutate(Bin = "Bin26") %>% dplyr::select(Bin, everything())
 
 
-bin <- rbind(bin6, bin7, bin8,bin10, bin11,bin16, bin17, bin23, bin24, bin25, bin26)
+bin <- rbind(bin6, bin7, bin8,bin10, bin11,bin15, bin16, bin17, bin23, bin24, bin25, bin26)
 kable(bin, booktabs=TRUE, caption = "Taxa represented in bins") %>% kable_styling(latex_options="scale_down")
 
 
