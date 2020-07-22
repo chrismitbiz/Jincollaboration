@@ -1516,7 +1516,7 @@ p <- microbiome::heat(correlation.table, "Genus", "X2", fill = "Correlation", st
 #fig
 ```
   
-```{r, heatmapch_bac_plot, fig.height=8, fig.width=12.5, message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
+```{r, heatmapch_bac_plot, fig.height=9, fig.width=11, message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
 p + ggtitle( "Correlations of clr transformed abundances on genus level")
 ```
 
@@ -1552,6 +1552,6 @@ p <- microbiome::heat(correlation.table, "Genus", "X2", fill = "Correlation", st
 #results <- ggtexttable(format(results, digits = 1),rows = NULL) 
 ```
 
-```{r, heatmapch_bacvert_plot, fig.height=8, fig.width=12.5, message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
+```{r, heatmapch_bacvert_plot, fig.height=9, fig.width=11, message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
 p + ggtitle( "Correlations of clr transformed abundances on genus level")
 ```
