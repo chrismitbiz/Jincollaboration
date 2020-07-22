@@ -9,7 +9,7 @@ output:
     number_sections: false
 always_allow_html: true
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
@@ -60,7 +60,12 @@ options(kableExtra.auto_format = FALSE)
 ```{r phyloseq, warning=FALSE, message=FALSE, echo=FALSE, cache = TRUE}
 #https://forum.qiime2.org/t/tutorial-integrating-qiime2-and-r-for-data-visualization-and-analysis-using-qiime2r/4121?u=jbisanz
 metadata<-read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/metadata.tsv") #requires tidyverse
-metadata2 <- metadata[c(2:49),]
+metadata2 <- metadata[c(2:49),] %>%
+  rownames_to_column("spl")%>%
+  mutate_all(type.convert) %>%
+  mutate_if(is.factor, as.character)%>%
+  column_to_rownames("spl")
+
 #defining factors
 metadata2$Soils <- factor(metadata2$Soils, levels=c("Vertisol", "Chromosol"))
 metadata2$CO2 <- factor(metadata2$CO2, levels=c("300", "500"))
@@ -69,7 +74,7 @@ metadata2$Rep <-  factor(metadata2$Rep, levels=c("I", "II", "III", "IV"))
 
 SVs      <-   qiime2R::read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/feature_table.qza")
 
-taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomoy_silva.tsv") %>% dplyr::rename(Feature.ID = `Feature ID`)
+taxonomy <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomoy_silva.tsv") %>% filter(Taxon != "categorical") %>% dplyr::rename(Feature.ID = `Feature ID`)
 
 taxtable <- taxonomy %>% as_tibble() %>% separate(Taxon, sep=";", c("Kingdom","Phylum","Class","Order","Family","Genus","Species")) 
 
@@ -79,8 +84,9 @@ physeqB <- phyloseq(
   otu_table(SVs$data, taxa_are_rows = T), 
   phy_tree(tree$data), 
   tax_table(as.data.frame(taxtable) %>% dplyr::select(-Confidence) %>% column_to_rownames("Feature.ID") %>% as.matrix()), 
-  sample_data(metadata2 %>% as.data.frame() %>% column_to_rownames("#SampleID")))
+  sample_data(metadata2 %>% as_tibble() %>% tibble::column_to_rownames("#SampleID")))
 
+taxtableB <- data.frame(phyloseq::tax_table(physeqB)@.Data) %>% rownames_to_column("Id")
 #adding diversity measures (with ps object) to metadata and re-create ps object 
 #here a decision has to be made on sample size. Look at feature-table.qzv to see how many samples are lost with x sample size or how many features are lost with minimum sample size. This is used ONLY for diversity metrics (not differentially abundance anaylyis which I filter separately. So I generally use the minimum samples size if different between min/max is within 10fold. 
 print(paste("The minimum number of sequences in this data set is",min(colSums(otu_table(physeqB))),"and the maximum number of sequences in this data set is",max(colSums(otu_table(physeqB))) ))
@@ -96,6 +102,9 @@ meta.df$pielou_ev <- ps.div$Shannon/log(ps.div$Observed)      #Pielou eveness
 physeqB@sam_data <- sample_data(meta.df)
 
 physeqB
+
+
+
 #kable(head(sample_data(physeqB)))
 #head(otu_table(physeqB))
 #head(tax_table(physeqB))
@@ -111,10 +120,11 @@ otus.table <- otus.table %>% rownames_to_column(var = "#SampleID") %>% arrange(d
 #filter 
 #minimum of reads per feature
 physeqB.flt = prune_taxa(taxa_sums(physeqB) >= 25, physeqB) #minimum reads per feature
-physeqB.flt = filter_taxa(physeqB.flt , function(x) sum(x > 0) > (0.04*length(x)), TRUE) #minimum presense in x% of samples
+physeqB.flt = filter_taxa(physeqB.flt , function(x) sum(x > 0) > (0.04*length(x)), TRUE) #minimum presence in x% of samples
 #filter any phyla that have not been classified i.e. are "NA"
 physeqB.flt = subset_taxa(physeqB.flt, !is.na(Phylum) & !Phylum %in% c("", "uncharacterized"))
 
+taxtableB_flt <- data.frame(phyloseq::tax_table(physeqB.flt)@.Data) %>% rownames_to_column("Id")
 #rarefaction curve
 rarecurve(t(otu_table(physeqB.flt)), step=200, sample = min(colSums(otu_table(physeqB.flt))), label = FALSE) 
 
@@ -991,15 +1001,16 @@ plot(selb.CO2$global.plot)
 ```{r , phylfactor2, echo=FALSE,  fig.width=13, fig.asp = 0.5, message=FALSE, warning=FALSE, fig.cap= "Relative abundances which significantly changed over time and under elevated CO2 of taxa bins identifed with phylofactor (model days*CO2, n=24)", cache=FALSE, eval=TRUE}
 require(phylofactor)
 
-taxonomygg <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomy_gg.tsv") %>% dplyr::rename(Feature.ID = `Feature ID`)
+taxonomygg <- read_tsv("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/taxonomy_gg.tsv") %>% filter(Taxon != "categorical") %>% dplyr::rename(Feature.ID = `Feature ID`)
 taxtablegg <- taxonomygg %>% as_tibble() %>% separate(Taxon, sep=";", c("Kingdom","Phylum","Class","Order","Family","Genus","Species")) 
 tree_gg <- read_qza("~/Documents/Study/LaTrobe/Research/phD/Jin_Project2_Sand/Jincollaboration/qiime2files_200317/insertion-tree_gg.qza")
 
+  
 physeqB_gg <- phyloseq(
   otu_table(SVs$data, taxa_are_rows = T), 
   phy_tree(tree_gg$data), 
   tax_table(as.data.frame(taxtablegg) %>% dplyr::select(-Confidence) %>% column_to_rownames("Feature.ID") %>% as.matrix()), 
-  sample_data(metadata2 %>% as.data.frame() %>% column_to_rownames("#SampleID")))
+  sample_data(metadata2 %>% as_tibble() %>% column_to_rownames("#SampleID")))
 
 #filtering out mitochondria and Chloroplast and unknown phyla
 #subset_taxa(physeqB_gg, Class==" c__Chloroplast")
@@ -1434,3 +1445,113 @@ nmds1
 ```
   
 go [back to top](#metadata) 
+  
+# Correlations of metadata
+```{r corr1, warning=FALSE, message=FALSE, echo=FALSE, cache = TRUE}
+require(psych)
+require(reshape2)
+test.df <- data.frame(sample_data(physeqB))
+correlation_matrix=corr.test(test.df[,c("phytate","Olsen.P", "Microbial.P", "microbial.C", "Microbial.C.P","Cumulative.C","respiration.rate","DOC","Shannon","Simpson","InvSimpson","Fisher","pielou_ev","Observed")], method="spearman", adjust="holm")
+
+r_matrix=correlation_matrix$r
+r_matrix[row(r_matrix)>col(r_matrix)]=0
+diag(r_matrix)=0
+p_matrix=correlation_matrix$p
+p_matrix[row(p_matrix)>col(p_matrix)]=1
+diag(p_matrix)=1
+r_table=melt(r_matrix)
+p_table=melt(p_matrix)
+cortable <- data.frame(r_table$Var1, r_table$Var2, r_table$value, p_table$value) #creates the table with r and p values
+```
+## Significant correlations accross all samples (<0.05 BH corrected) {#cor_meta}
+```{r corr2, warning=FALSE, message=FALSE, echo=FALSE, cache = TRUE}
+#filter1
+cortable.sig <- cortable %>% 
+  filter(p_table.value <= 0.05) %>%
+  arrange(p_table.value)
+cortable.sig
+
+test.df <- data.frame(sample_data(physeqB))
+df <- test.df[,c("phytate","Olsen.P", "Microbial.P", "microbial.C", "Microbial.C.P","Cumulative.C","respiration.rate","DOC","Shannon","Simpson","InvSimpson","Fisher","pielou_ev","Observed")] 
+ggcorrplot::ggcorrplot(cor(df))
+```
+
+# Abundance Heatmaps
+## Bacteria
+### Chromosol, taxa filtered to those present in 25% of samples  
+Correlation threshold = p.adj < 0.15
+```{r heatmapch_bac, eval=TRUE, include=TRUE,  message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
+#https://microbiome.github.io/tutorials/Composition.html
+
+### https://microbiome.github.io/tutorials/  Cross correaltion heatmap
+# Define data sets to cross-correlate
+physeq_nc.ch <-  phyloseq::prune_samples(sample_data(physeqB)$Soil == "Chromosol", physeqB)
+physeq_nc.ch <-  phyloseq::tax_glom(physeq_nc.ch, "Genus")
+physeq_nc.ch.flt.clr = phyloseq::filter_taxa(physeq_nc.ch, function(x) sum(x > 0) > (0.25*length(x)), TRUE)
+## clr transform
+physeq_nc.ch.flt.clr <- microbiome::transform(physeq_nc.ch.flt.clr, "clr")
+otutable <- as.data.frame(phyloseq::otu_table(physeq_nc.ch.flt.clr)) 
+otutable <- as.data.frame(t(otutable))
+taxtable_nc.ch <-  data.frame(phyloseq::tax_table(physeq_nc.ch)@.Data) %>% rownames_to_column("Id")
+# Get sample metadata
+meta.df <- as.data.frame(sample_data(physeq_nc.ch.flt.clr))
+
+x <- as.matrix(otutable)
+y <- data.frame(meta.df[,c("phytate","Olsen.P", "Microbial.P", "microbial.C", "Microbial.C.P","Cumulative.C","respiration.rate")])
+
+# ...Or, alternatively, the same output is also available in a handy table format
+correlation.table <- microbiome::associate(x, y, method = "spearman", mode = "table", p.adj.threshold = 0.15, n.signif = 1) %>% dplyr::rename(Id = X1) %>%  dplyr::left_join(taxtable_nc.ch)
+
+p <- microbiome::heat(correlation.table, "Genus", "X2", fill = "Correlation", star = "p.adj", p.adj.threshold = 0.15)
+
+#results <- p$data %>% dplyr::rename(Feature.ID = Id ) %>% inner_join(taxtableb) %>% dplyr::select( Phylum, Family, Genus, p.adj) %>% filter(p.adj < 0.05) %>% dplyr::select(Phylum, Family, Genus, p.adj) %>% data.frame() 
+
+#results <- ggtexttable(format(results, digits = 1),rows = NULL) 
+
+#fig <- ggarrange(p,results, ncol = 2, nrow = 1, widths = c(0.4,0.6)) + ggtitle( "Correlations of clr transformed abundances on genus level")
+#fig <- annotate_figure(fig , top =  "CHROMOSOL, Correlations of clr transformed abundances on genus level")
+
+#pdf(NULL)
+#x = dev.off()
+#fig
+```
+  
+```{r, heatmapch_bac_plot, fig.height=8, fig.width=12.5, message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
+p + ggtitle( "Correlations of clr transformed abundances on genus level")
+```
+
+### Vertisol, taxa filtered to those present in 25% of samples  
+Correlation threshold = p.adj < 0.05
+```{r heatmapvert_bac, eval=TRUE, include=TRUE,  message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
+#https://microbiome.github.io/tutorials/Composition.html
+
+### https://microbiome.github.io/tutorials/  Cross correaltion heatmap
+# Define data sets to cross-correlate
+physeq_nc.ch <-  prune_samples(sample_data(physeqB)$Soil == "Vertisol", physeqB)
+physeq_nc.ch <-  tax_glom(physeq_nc.ch, "Genus")
+physeq_nc.ch.flt.clr = filter_taxa(physeq_nc.ch, function(x) sum(x > 0) > (0.25*length(x)), TRUE)
+## clr transform
+physeq_nc.ch.flt.clr <- microbiome::transform(physeq_nc.ch.flt.clr, "clr")
+otutable <- as.data.frame(phyloseq::otu_table(physeq_nc.ch.flt.clr))
+otutable <- as.data.frame(t(otutable))
+taxtable_nc.ch <-  data.frame(phyloseq::tax_table(physeq_nc.ch)@.Data) %>% rownames_to_column("Id")
+# Get sample metadata
+meta.df <- as.data.frame(sample_data(physeq_nc.ch.flt.clr))
+
+x <- as.matrix(otutable)
+y <- as.data.frame(meta.df[,c("phytate","Olsen.P", "Microbial.P", "microbial.C", "Microbial.C.P","Cumulative.C","respiration.rate")])
+
+# ...Or, alternatively, the same output is also available in a handy table format
+correlation.table <- microbiome::associate(x, y, method = "spearman", mode = "table", p.adj.threshold = 0.05, n.signif = 1) %>% dplyr::rename(Id = X1) %>%  dplyr::left_join(taxtable_nc.ch)
+
+p <- microbiome::heat(correlation.table, "Genus", "X2", fill = "Correlation", star = "p.adj", p.adj.threshold = 0.05)
+
+
+#results <- p$data %>% rename(Feature.ID = Id ) %>% inner_join(taxtableb) %>% dplyr::select( Phylum, Family, Genus, p.adj) %>% filter(p.adj < 0.1) %>% dplyr::select(Phylum, Family, Genus, p.adj) %>% data.frame() 
+
+#results <- ggtexttable(format(results, digits = 1),rows = NULL) 
+```
+
+```{r, heatmapch_bacvert_plot, fig.height=8, fig.width=12.5, message= FALSE, warning=FALSE, echo= FALSE, cache = FALSE}
+p + ggtitle( "Correlations of clr transformed abundances on genus level")
+```
